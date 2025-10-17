@@ -47,6 +47,21 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/committee', committeeRoutes);
 
+app.get('/', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'ITHS Election Backend API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      candidates: '/api/candidates',
+      committee: '/api/committee',
+      votes: '/api/votes' // You'll need to implement this
+    },
+    documentation: 'Add your API docs link here'
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
