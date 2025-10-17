@@ -20,6 +20,8 @@ const candidateSchema = new mongoose.Schema({
     enum: [
       'Chairman',
       'Vice-Chairman', 
+      'Treasurer 1',
+      'Treasurer 2',
       'Social Director 1',
       'Social Director 2',
       'Welfare Director 1',
