@@ -66,18 +66,10 @@ committeeRoutes.post('/login', async (req, res) => {
 });
 
 // GET /api/committee/candidates - Protected, list all candidates
-committeeRoutes.get('/candidates', protect, async (req, res) => {
-  try {
-    const Candidate = (await import('../models/candidate.js')).default;
-    const candidates = await Candidate.find().sort({ createdAt: -1 });
-    res.json(candidates);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
+
 
 // GET /api/committee/candidates - List candidates with vote counts
-router.get('/candidates', protect, async (req, res) => {
+committeeRoutes.get('/candidates', protect, async (req, res) => {
   try {
     const Candidate = (await import('../models/Candidate.js')).default;
     const Vote = (await import('../models/Vote.js')).default;
