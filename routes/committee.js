@@ -76,4 +76,58 @@ committeeRoutes.get('/candidates', protect, async (req, res) => {
   }
 });
 
+// GET /api/committee/candidates - List candidates with vote counts
+router.get('/candidates', protect, async (req, res) => {
+  try {
+    const Candidate = (await import('../models/Candidate.js')).default;
+    const Vote = (await import('../models/Vote.js')).default;
+
+    // Aggregate votes per candidate
+    const voteCounts = await Vote.aggregate([
+      {
+        $group: {
+          _id: { candidateId: '$candidateId', position: '$position' },
+          voteCount: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          candidateId: '$_id.candidateId',
+          position: '$_id.position',
+          voteCount: 1,
+          _id: 0
+        }
+      }
+    ]);
+
+    // Fetch all candidates
+    const candidates = await Candidate.find().sort({ createdAt: -1 });
+
+    // Merge vote counts with candidates
+    const candidatesWithVotes = candidates.map(candidate => {
+      const voteData = voteCounts.find(v => v.candidateId === candidate._id.toString() && v.position === candidate.position);
+      return {
+        _id: candidate._id,
+        name: candidate.name,
+        email: candidate.email,
+        position: candidate.position,
+        createdAt: candidate.createdAt,
+        voteCount: voteData ? voteData.voteCount : 0
+      };
+    });
+
+    // Group by position
+    const groupedByPosition = candidatesWithVotes.reduce((acc, candidate) => {
+      acc[candidate.position] = acc[candidate.position] || [];
+      acc[candidate.position].push(candidate);
+      return acc;
+    }, {});
+
+    res.json({ success: true, data: groupedByPosition });
+  } catch (err) {
+    console.error('Fetch candidates with votes error:', err);
+    res.status(500).json({ success: false, msg: 'Error fetching candidates' });
+  }
+});
+
 export default committeeRoutes;
