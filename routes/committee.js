@@ -1,5 +1,7 @@
 import express from 'express';
 import Committee from '../models/committee.js';
+import Candidate from '../models/candidate.js'; // Use static import
+import Vote from '../models/vote.js'; // Use static import
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -59,48 +61,53 @@ committeeRoutes.post('/login', async (req, res) => {
         surname: committee.surname 
       }
     });
-
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-// GET /api/committee/candidates - Protected, list all candidates
-
-
-// GET /api/committee/candidates - List candidates with vote counts
+// GET /api/committee/candidates - Protected, list all candidates with vote counts
 committeeRoutes.get('/candidates', protect, async (req, res) => {
   try {
-    const Candidate = require('../models/Candidate');
-    const Vote = require('../models/Vote');
+    console.log('Fetching candidates with votes...');
 
-    // First, try just fetching candidates without votes
-    const candidates = await Candidate.find().sort({ createdAt: -1 });
-    
-    // If this works, then try the aggregation
-    let voteCounts = [];
-    try {
-      voteCounts = await Vote.aggregate([
-        {
-          $group: {
-            _id: '$candidateId',
-            voteCount: { $sum: 1 },
-            position: { $first: '$position' }
-          }
+    // Aggregate votes per candidate
+    const voteCounts = await Vote.aggregate([
+      {
+        $group: {
+          _id: { candidateId: '$candidateId', position: '$position' },
+          voteCount: { $sum: 1 }
         }
-      ]);
-    } catch (aggError) {
-      console.log('Aggregation error, using empty vote counts:', aggError);
-      voteCounts = [];
-    }
+      },
+      {
+        $project: {
+          candidateId: '$_id.candidateId',
+          position: '$_id.position',
+          voteCount: 1,
+          _id: 0
+        }
+      }
+    ]);
 
-    // Merge data
+    console.log(`Found ${voteCounts.length} vote count entries`);
+
+    // Fetch all candidates
+    const candidates = await Candidate.find().sort({ createdAt: -1 });
+    console.log(`Found ${candidates.length} candidates`);
+
+    // Merge vote counts with candidates
     const candidatesWithVotes = candidates.map(candidate => {
       const voteData = voteCounts.find(v => 
-        v._id && v._id.toString() === candidate._id.toString()
+        v.candidateId && 
+        v.candidateId.toString() === candidate._id.toString() && 
+        v.position === candidate.position
       );
       return {
-        ...candidate.toObject(),
+        _id: candidate._id,
+        name: candidate.name,
+        email: candidate.email,
+        position: candidate.position,
+        createdAt: candidate.createdAt,
         voteCount: voteData ? voteData.voteCount : 0
       };
     });
@@ -112,16 +119,18 @@ committeeRoutes.get('/candidates', protect, async (req, res) => {
       return acc;
     }, {});
 
+    console.log('Grouped by positions:', Object.keys(groupedByPosition));
+
     res.json({ 
       success: true, 
       data: groupedByPosition 
     });
 
   } catch (err) {
-    console.error('Error in /candidates:', err);
+    console.error('Fetch candidates with votes error:', err);
     res.status(500).json({ 
       success: false, 
-      msg: 'Error fetching candidates: ' + err.message 
+      msg: 'Error fetching candidates: ' + err.message
     });
   }
 });
