@@ -1,38 +1,81 @@
+// routes/votes.js or wherever your vote route is
 import express from 'express';
+import Vote from '../models/Vote.js';
 import mongoose from 'mongoose';
 
 const router = express.Router();
 
-const voteSchema = new mongoose.Schema({
-  voterEmail: { type: String, required: true },
-  position: { type: String, required: true },
-  candidateId: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Vote = mongoose.model('Vote', voteSchema);
-
+// POST /api/votes - Submit a vote
 router.post('/', async (req, res) => {
   try {
-    const { voterEmail, position, candidateId } = req.body;
-    if (!voterEmail || !position || !candidateId) {
-      return res.status(400).json({ success: false, msg: 'All fields required' });
+    const { voterName, voterEmail, position, candidateId } = req.body;
+
+    // Validate required fields
+    if (!voterName || !voterEmail || !position || !candidateId) {
+      return res.status(400).json({ 
+        success: false, 
+        msg: 'All fields are required' 
+      });
     }
 
-    // Verify candidate exists
-    const Candidate = (await import('../models/Candidate.js')).default;
-    const candidate = await Candidate.findOne({ _id: candidateId, position });
-    if (!candidate) {
-      return res.status(400).json({ success: false, msg: 'Invalid candidate for this position' });
+    // Check if voter has already voted for this position
+    const existingVote = await Vote.findOne({ 
+      voterEmail: voterEmail.toLowerCase(), 
+      position 
+    });
+
+    if (existingVote) {
+      return res.status(400).json({
+        success: false,
+        msg: `You have already voted for ${position} position`
+      });
     }
 
-    const vote = new Vote({ voterEmail, position, candidateId });
+    // Create new vote
+    const vote = new Vote({
+      voterName: voterName.trim(),
+      voterEmail: voterEmail.toLowerCase().trim(),
+      position,
+      candidateId: new mongoose.Types.ObjectId(candidateId)
+    });
+
     await vote.save();
 
-    res.status(201).json({ success: true, msg: 'Vote recorded', data: vote });
-  } catch (error) {
-    console.error('Vote error:', error);
-    res.status(500).json({ success: false, msg: 'Server error' });
+    res.status(201).json({
+      success: true,
+      msg: 'Vote submitted successfully!',
+      data: {
+        id: vote._id,
+        voterName: vote.voterName,
+        position: vote.position
+      }
+    });
+
+  } catch (err) {
+    console.error('Vote submission error:', err);
+    
+    // Handle duplicate vote error (from unique index)
+    if (err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        msg: 'You have already voted for this position'
+      });
+    }
+
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      const errors = Object.values(err.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        msg: 'Validation error',
+        errors
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      msg: 'Error submitting vote'
+    });
   }
 });
 
