@@ -46,4 +46,4 @@ const candidatesData = [
   { name: 'Ogundare Oluwafemi Abiodun', email: 'ogundare.oluwafemi@example.com', position: 'Social Director 2' }
 ];
 
-module.exports = candidatesData;
+export default candidatesData;
