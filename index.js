@@ -6,6 +6,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import candidateRoutes from './routes/candidate.js';
 import committeeRoutes from './routes/committee.js';
+import voteRoutes from './routes/vote.js';
 dotenv.config();
 
 const app = express();
@@ -57,6 +58,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/committee', committeeRoutes);
+app.use('/api/votes', voteRoutes);
 
 app.get('/', (req, res) => {
   res.json({ 

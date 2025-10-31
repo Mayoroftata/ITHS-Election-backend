@@ -5,8 +5,10 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
+const voteRoutes = router;
+
 // POST /api/votes - Submit a vote
-router.post('/', async (req, res) => {
+voteRoutes.post('/', async (req, res) => {
   try {
     const { voterName, voterEmail, position, candidateId } = req.body;
 
@@ -79,4 +81,4 @@ router.post('/', async (req, res) => {
   }
 });
 
-export default router;
+export default voteRoutes;
