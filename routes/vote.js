@@ -1,6 +1,6 @@
 // routes/votes.js or wherever your vote route is
 import express from 'express';
-import Vote from '../models/Vote.js';
+import Vote from '../models/vote.js';
 import mongoose from 'mongoose';
 
 const router = express.Router();
