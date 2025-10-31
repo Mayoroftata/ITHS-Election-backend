@@ -1,6 +1,7 @@
 import express from 'express';
 import Candidate from '../models/candidate.js'; // Fixed import name
 import { sendRegistrationEmail } from '../services/emailService.js';
+import candidatesData from '../seedCandidates.js';
 
 const router = express.Router();
 
@@ -83,5 +84,25 @@ candidateRoutes.post('/register', async (req, res) => {
     });
   }
 });
+
+candidateRoutes.post('/seed', async (req, res) => {
+  try {
+    await Candidate.deleteMany({});
+    const createdCandidates = await Candidate.insertMany(candidatesData);
+    res.status(201).json({
+      success: true,
+      msg: 'Database seeded successfully',
+      data: createdCandidates,
+      count: createdCandidates.length
+    });
+  } catch (error) {
+    console.error('Seeding error:', error);
+    res.status(500).json({
+      success: false,
+      msg: 'Error seeding database',
+      error: error.message
+    });
+  }
+}); 
 
 export default router; 

@@ -18,15 +18,17 @@ const voteSchema = new mongoose.Schema({
     required: true,
     enum: [
       'Chairman',
-      'Vice-Chairman', 
-      'Social Director 1',
-      'Social Director 2',
-      'Welfare Director 1',
-      'Welfare Director 2',
+      'Vice-Chairman',
+      'Treasurer 1',
+      'Treasurer 2',
+      'Welfare 1',
+      'Welfare 2',
+      'Secretary 1',
+      'Secretary 2',
       'PRO 1',
       'PRO 2',
-      'Secretary 1',
-      'Secretary 2'
+      'Social Director 1',
+      'Social Director 2'
     ]
   },
   candidateId: {
