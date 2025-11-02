@@ -4,7 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
-// import candidateRoutes from './routes/candidate.js';
+import candidateRoutes from './routes/candidate.js';
 import committeeRoutes from './routes/committee.js';
 import voteRoutes from './routes/vote.js';
 dotenv.config();
@@ -46,7 +46,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Routes
-// app.use('/api/candidates', candidateRoutes);
+app.use('/api/candidates', candidateRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
