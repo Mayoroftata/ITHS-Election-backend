@@ -105,4 +105,4 @@ candidateRoutes.get('/', async (req, res) => {
 //   }
 // }); 
 
-export default router; 
+export default candidateRoutes; 
