@@ -1,31 +1,31 @@
-// import express from 'express';
-// import Candidate from '../models/candidate.js'; // Fixed import name
+import express from 'express';
+import Candidate from '../models/candidate.js'; // Fixed import name
 // import { sendRegistrationEmail } from '../services/emailService.js';
 // import candidatesData from '../seedCandidates.js';
 
-// const router = express.Router();
+const router = express.Router();
 
-// const candidateRoutes = router;
+const candidateRoutes = router;
 
-// // Get all candidates
-// candidateRoutes.get('/', async (req, res) => {
-//   try {
-//     const candidates = await Candidate.find().sort({ createdAt: -1 });
-//     res.json({
-//       success: true,
-//       count: candidates.length,
-//       data: candidates
-//     });
-//   } catch (error) {
-//     console.error('Get candidates error:', error);
-//     res.status(500).json({
-//       success: false,
-//       msg: 'Error fetching candidates'
-//     });
-//   }
-// });
+// Get all candidates
+candidateRoutes.get('/', async (req, res) => {
+  try {
+    const candidates = await Candidate.find().sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      count: candidates.length,
+      data: candidates
+    });
+  } catch (error) {
+    console.error('Get candidates error:', error);
+    res.status(500).json({
+      success: false,
+      msg: 'Error fetching candidates'
+    });
+  }
+});
 
-// // Register new candidate
+// Register new candidate
 // candidateRoutes.post('/register', async (req, res) => {
 //   try {
 //     const { name, email, position } = req.body;
@@ -105,4 +105,4 @@
 //   }
 // }); 
 
-// export default router; 
+export default router; 
